@@ -1,3 +1,4 @@
+#this contains world information
 import turtle
 
 class WorldScreen:

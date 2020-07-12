@@ -1,3 +1,4 @@
+#this contains powersource information
 import turtle
 import random
 

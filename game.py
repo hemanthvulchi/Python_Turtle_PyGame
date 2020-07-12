@@ -1,5 +1,5 @@
-#my own pong game by @hemanthvulchi
-#using tutorial by tokyoedtech
+#my own ambient AI game by @hemanthvulchi
+#uses distance approximation to guide the agent towards the powersource
 #Part 1
 
 import turtle

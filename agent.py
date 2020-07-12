@@ -1,3 +1,4 @@
+#this contains the agent itself and the functions it can perform
 import turtle
 import random
 
