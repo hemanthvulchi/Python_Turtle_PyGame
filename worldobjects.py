@@ -11,6 +11,9 @@ class WorldScreen:
         self.worldscreen.bgcolor("green")
         self.worldscreen.setup(width=x_size, height=y_size,startx=-400,starty=50)
         self.worldscreen.tracer(0)
+    
+    def worldexit(self):
+        self.worldscreen.bye()
 
 
 

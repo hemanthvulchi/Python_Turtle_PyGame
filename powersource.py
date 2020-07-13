@@ -10,10 +10,13 @@ class PowerSource():
         self.psource.shape("circle")
         self.psource.color("yellow")
         self.psource.penup()
-        self.psource.goto(random.randrange(-390,390),random.randrange(-390,390))
+        #self.psource.goto(random.randrange(-390,390),random.randrange(-390,390))
+        self.psource.goto(20,0)
+        self.psource.shapesize(stretch_len=0.1,stretch_wid=0.1)
         self.psource.speed(2)
         self.psource.dx =0.05
         
+
     def move(self):
         self.psource.setx(self.psource.xcor()+self.psource.dx)
 
