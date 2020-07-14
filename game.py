@@ -1,5 +1,6 @@
 #my own ambient AI game by @hemanthvulchi
 #uses distance approximation to guide the agent towards the powersource
+#export DISPLAY=:1
 #Part 1
 
 import turtle
@@ -9,33 +10,45 @@ import agent
 print("Hello world turtle")
 
 
-#Main game
+#Main game#
+class Gameengine:
+    
+    # world: worldobjects.WorldScreen
+    # psrc: powersource.PowerSource
+    # ai_agent: agent.Agent
 
+    def __init__(self):
+        self.world = worldobjects.WorldScreen(800,800)
+        self.psrc=powersource.PowerSource(self.world)
+        self.ai_agent=agent.Agent(self.world)
 
+    def testprint(self):
+        self.ai_agent.calculate_distance(psrc)
+        self.ai_agent.print_distance()
 
-world = worldobjects.WorldScreen(800,800)
-psrc=powersource.PowerSource()
-ai_agent=agent.Agent()
+    def worldexit(self):
+        turtle.Screen().bye()
 
+    #listen to key strokes
+    def worldlisten(self):
+        self.world.worldscreen.listen()
+        self.world.worldscreen.onkeypress(self.testprint,"z")
+        #world.worldscreen.onkeypress(ai_agent.move_top(world),"w")
+        self.world.worldscreen.onkeypress(self.ai_agent.move_top,"w")
+        self.world.worldscreen.onkeypress(self.ai_agent.move_bot,"s")
+        self.world.worldscreen.onkeypress(self.ai_agent.move_right,"d")
+        self.world.worldscreen.onkeypress(self.ai_agent.move_left,"a")
+        self.world.worldscreen.onkeypress(self.worldexit,"p")
 
-def testprint():
-    ai_agent.calculate_distance(psrc)
-    ai_agent.print_distance()
+    #main loop
+    def mainloop(self):
+        while True:
+            self.world.worldscreen.update()
+            self.psrc.check_agent(self.ai_agent)
 
-def worldexit():
-    turtle.Screen().bye()
-
-#listen to key strokes
-world.worldscreen.listen()
-world.worldscreen.onkeypress(testprint,"z")
-world.worldscreen.onkeypress(ai_agent.move_top,"w")
-world.worldscreen.onkeypress(ai_agent.move_bot,"s")
-world.worldscreen.onkeypress(ai_agent.move_right,"d")
-world.worldscreen.onkeypress(ai_agent.move_left,"a")
-world.worldscreen.onkeypress(worldexit,"p")
-
-#main loop
+#main game 
 while True:
-    world.worldscreen.update()
-
-
+    game_ai = Gameengine()
+    game_ai.worldlisten()
+    game_ai.mainloop()
+    break
