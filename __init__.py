@@ -2,3 +2,5 @@
 from .worldobjects import WorldScreen
 from .powersource import PowerSource
 from .agent import Agent
+from .neuralnet_pytorch import ThreeLayerNet
+from .neuralnet_pytorch import NeuralNetPytorch
