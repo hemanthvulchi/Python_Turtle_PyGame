@@ -72,6 +72,16 @@ class Agent():
         dist = math.sqrt((x2 - x1)**2 + (y2 - y1)**2)
         return dist
 
+    def move_agent(self, movement_direction):
+        if movement_direction == 0:
+            self.move_top()
+        elif movement_direction == 1:
+            self.move_bot()
+        elif movement_direction == 2:
+            self.move_right()
+        elif movement_direction == 3:
+            self.move_left()
+
     # function to move the agent to top / also included boundary checks
     def move_top(self):
         if self.agent.ycor() < self.size_y:

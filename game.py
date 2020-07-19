@@ -8,7 +8,8 @@ import turtle
 import worldobjects 
 import powersource
 import agent
-import neuralnet_pytorch
+import neuralnet_pytorch as NeuralNetPytorch
+
 print("Hello world turtle")
 
 
@@ -50,20 +51,29 @@ class Gameengine:
     
     # main loop
     def mainloop(self, game_ai):
+        i=0
         while True:
             self.world.worldscreen.update()
-            
-            # observe the world from an agent's perspective
-            
-                       
-            
+            agent_distances = self.ai_agent.get_distance(self.psrc.psource.xcor(),
+                                                         self.psrc.psource.ycor())
+            game_ai.observe_world(agent_distances)
+            self.y_index = game_ai.action_world()
+            self.ai_agent.move_agent(self.y_index)
+            self.loss = game_ai.observe_result()
+            # If aimed to move the agent through a procedural fashion
+            #self.ai_agent.move_agent(game_ai.minimum_index())
+
+            #if i % 100 == 99:
+            #    print(i, self.loss)
+
             # to move powersource, if it is beside the agent
             self.psrc.check_agent(self.ai_agent)
+            i = i + 1
 
 
-#main game 
+# main game 
 while True:
-    game_ai = NeuralNetPytorch()
+    game_ai = NeuralNetPytorch.NeuralNetCustom()
     game_world = Gameengine()
     game_world.worldlisten()
     game_world.mainloop(game_ai)
