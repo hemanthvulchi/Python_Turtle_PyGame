@@ -9,7 +9,9 @@ import worldobjects
 import powersource
 import agent
 import neuralnet_pytorch as NeuralNetPytorch
+import os
 
+os.system('clear')
 print("Hello world turtle")
 
 
@@ -63,12 +65,12 @@ class Gameengine:
             # If aimed to move the agent through a procedural fashion
             #self.ai_agent.move_agent(game_ai.minimum_index())
 
-            #if i % 100 == 99:
-            #    print(i, self.loss)
+            if i % 100 == 99:
+                print(i, self.loss)
 
             # to move powersource, if it is beside the agent
             self.psrc.check_agent(self.ai_agent)
-            i = i + 1
+            #i = i + 1
 
 
 # main game 

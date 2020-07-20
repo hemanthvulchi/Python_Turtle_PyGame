@@ -44,7 +44,7 @@ class NeuralNetCustom():
         self.model.cuda("cuda:0")
         self.criterion = torch.nn.MSELoss(reduction='sum').cuda("cuda:0")
         # optimizer = torch.optim.SGD(model.parameters(), lr=1e-4)
-        self.optimizer = torch.optim.Adam(self.model.parameters(), lr=1e-5)
+        self.optimizer = torch.optim.Adam(self.model.parameters(), lr=1e-10)
 
     def get_input(self, x1, x2, x3, x4):
         self.x.data = torch.tensor([x1, x2, x3, x4], device=self.device, dtype=self.ndtype).data
@@ -56,7 +56,7 @@ class NeuralNetCustom():
     def observe_world(self, a_distances):
         #self.x = a_distances
         self.get_input(a_distances[0], a_distances[1], a_distances[2], a_distances[3])
-        print("observing world: ", self.x)
+        
 
     def action_world(self):
         self.y_pred = self.model(self.x).cuda("cuda:0")
@@ -66,14 +66,16 @@ class NeuralNetCustom():
         self.y.zero_()
         y_index = self.minimum_index()
         if y_index == 0:
-            self.y = torch.tensor([1, 0, 0, 0], device=self.device, dtype=self.ndtype).data
+            self.y.data = torch.tensor([1, 0, 0, 0], device=self.device, dtype=self.ndtype).data
         elif y_index == 1:
-            self.y = torch.tensor([0, 1, 0, 0], device=self.device, dtype=self.ndtype).data
+            self.y.data = torch.tensor([0, 1, 0, 0], device=self.device, dtype=self.ndtype).data
         elif y_index == 2:
-            self.y = torch.tensor([0, 0, 1, 0], device=self.device, dtype=self.ndtype).data
+            self.y.data = torch.tensor([0, 0, 1, 0], device=self.device, dtype=self.ndtype).data
         elif y_index == 3:
-            self.y = torch.tensor([0, 0, 0, 1], device=self.device, dtype=self.ndtype).data
+            self.y.data = torch.tensor([0, 0, 0, 1], device=self.device, dtype=self.ndtype).data
         self.loss = self.criterion(self.y_pred, self.y).cuda("cuda:0")
+        print(" y pred  :", self.y_pred)
+        print(" y actual:", self.y)
         self.optimizer.zero_grad
         self.loss.backward()
         self.optimizer.step()
