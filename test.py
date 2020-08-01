@@ -1,28 +1,2 @@
-import torch
-a = torch.ones(5)
-a.requires_grad = True
 
-b = 2*a
-
-b.retain_grad()   # Since b is non-leaf and it's grad will be destroyed otherwise.
-
-c = b.mean()
-
-c.backward()
-print("first pass")
-print(a.grad, b.grad)
-
-# Redo the experiment but with a hook that multiplies b's grad by 2. 
-a = torch.ones(5)
-
-a.requires_grad = True
-
-b = 2*a
-
-b.retain_grad()
-
-b.register_hook(lambda x: print(x))  
-
-b.mean().backward() 
-
-print(a.grad, b.grad)
+print(min([2,3,5,7,9,1]))

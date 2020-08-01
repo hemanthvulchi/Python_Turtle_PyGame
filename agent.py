@@ -101,3 +101,6 @@ class Agent():
     def move_left(self):
         if self.agent.xcor() > -(self.size_x):
             self.agent.setx(self.agent.xcor() - self.agent.dx)
+
+    def reset_agent(self):
+        self.agent.goto(0, 0)

@@ -8,18 +8,20 @@ import numpy as np
 class ThreeLayerNet(torch.nn.Module):
     def __init__(self, D_in, H1, H2, D_out):
         super(ThreeLayerNet, self).__init__()
-        self.linear1 = torch.nn.Linear(D_in, H1)
-        self.linear2 = torch.nn.Linear(H1, H2)
-        self.linear3 = torch.nn.Linear(H2, D_out)
+        #self.linear1 = torch.nn.Linear(D_in, H1)
+        #self.linear2 = torch.nn.Linear(H1, H2)
+        self.linear3 = torch.nn.Linear(D_in, D_out)
 
     def forward(self, x):
         #h_relu1 = self.linear1(x).clamp(min=0)
         #h_relu2 = self.linear2(h_relu1).clamp(min=0)
         # y_pred = self.linear3(h_relu2)
         #return y_pred
-        h_relu1 = TF.relu(self.linear1(x))
-        h_relu2 = TF.relu(self.linear2(h_relu1))
-        return torch.sigmoid(self.linear3(h_relu2))
+        #h_relu1 = TF.relu(self.linear1(x))
+        #h_relu2 = TF.relu(self.linear2(h_relu1))
+        #y_pred = self.linear3(x).sigmoid()
+        y_pred = self.linear3(x).tanh()
+        return y_pred
 
 
 class NeuralNetCustom():
@@ -51,8 +53,10 @@ class NeuralNetCustom():
         self.weights_init(self.model)
         #self.model.weight.data.uniform_(0.0, 1.0)
         self.criterion = torch.nn.MSELoss(reduction='sum').cuda("cuda:0")
-        self.optimizer = torch.optim.SGD(self.model.parameters(), lr=1e-4)
-        # self.optimizer = torch.optim.Adam(self.model.parameters(), lr=1e-10)
+        #self.criterion = torch.nn.NLLLoss(reduction='sum').cuda("cuda:0")
+        #self.criterion = torch.nn.SmoothL1Loss().cuda("cuda:0")
+        #self.optimizer = torch.optim.SGD(self.model.parameters(), lr=1e-4)
+        self.optimizer = torch.optim.Adam(self.model.parameters(), lr=1e-4)
 
     def weights_init(self, m):
         if isinstance(m, torch.nn.Conv2d):
@@ -63,6 +67,9 @@ class NeuralNetCustom():
         self.np_inputs = np.array([x1, x2, x3, x4])
         self.norm = np.linalg.norm(self.np_inputs)
         np_inputs = self.np_inputs / self.norm
+        lowest_distance = min(np_inputs)
+        np_inputs = np_inputs - lowest_distance
+
         self.x.data = torch.tensor(np_inputs, device=self.device, dtype=self.ndtype).data
         # self.x.data = torch.tensor([x1, x2, x3, x4], device=self.device, dtype=self.ndtype).data
 
@@ -85,14 +92,23 @@ class NeuralNetCustom():
     def observe_result(self, iteration):
         self.y.zero_()
         y_index = self.minimum_index()
+        # if y_index == 0:
+        #     self.y.data = torch.tensor([1, 0, 0, 0], device=self.device, dtype=self.ndtype).data
+        # elif y_index == 1:
+        #     self.y.data = torch.tensor([0, 1, 0, 0], device=self.device, dtype=self.ndtype).data
+        # elif y_index == 2:
+        #     self.y.data = torch.tensor([0, 0, 1, 0], device=self.device, dtype=self.ndtype).data
+        # elif y_index == 3:
+        #     self.y.data = torch.tensor([0, 0, 0, 1], device=self.device, dtype=self.ndtype).data
         if y_index == 0:
-            self.y.data = torch.tensor([1, 0, 0, 0], device=self.device, dtype=self.ndtype).data
+            self.y.data = torch.tensor([1, -1, -1, -1], device=self.device, dtype=self.ndtype).data
         elif y_index == 1:
-            self.y.data = torch.tensor([0, 1, 0, 0], device=self.device, dtype=self.ndtype).data
+            self.y.data = torch.tensor([-1, 1, -1, -1], device=self.device, dtype=self.ndtype).data
         elif y_index == 2:
-            self.y.data = torch.tensor([0, 0, 1, 0], device=self.device, dtype=self.ndtype).data
+            self.y.data = torch.tensor([-1, -1, 1, -1], device=self.device, dtype=self.ndtype).data
         elif y_index == 3:
-            self.y.data = torch.tensor([0, 0, 0, 1], device=self.device, dtype=self.ndtype).data
+            self.y.data = torch.tensor([-1, -1, -1, 1], device=self.device, dtype=self.ndtype).data
+
         self.loss = self.criterion(self.y_pred, self.y).cuda("cuda:0")
         self.optimizer.zero_grad
         self.loss.backward()
@@ -103,14 +119,14 @@ class NeuralNetCustom():
             #    print(name, param, param.grad)
             #self.model.linear1.register_forward_hook(lambda grad: print(grad))
             #self.model.linear1.register_backward_hook(lambda grad: print(grad))
-            print("Linear 1 Wg:", self.model.linear1.weight)
-            print("Linear 1 Gd:", self.model.linear1.weight.grad)
-            print("Linear 1 Bi:", self.model.linear1.bias)
-            print("Linear 1 Gd:", self.model.linear1.bias.grad)
-            print("Linear 2 Wg:", self.model.linear2.weight)
-            print("Linear 2 Gd:", self.model.linear2.weight.grad)
-            print("Linear 2 Bi:", self.model.linear2.bias)
-            print("Linear 2 Gd:", self.model.linear2.bias.grad)
+            #print("Linear 1 Wg:", self.model.linear1.weight)
+            #print("Linear 1 Gd:", self.model.linear1.weight.grad)
+            #print("Linear 1 Bi:", self.model.linear1.bias)
+            #print("Linear 1 Gd:", self.model.linear1.bias.grad)
+            #print("Linear 2 Wg:", self.model.linear2.weight)
+            #print("Linear 2 Gd:", self.model.linear2.weight.grad)
+            #print("Linear 2 Bi:", self.model.linear2.bias)
+            #print("Linear 2 Gd:", self.model.linear2.bias.grad)
             print("Linear 3 Wg:", self.model.linear3.weight)
             print("Linear 3 Gd:", self.model.linear3.weight.grad)
             print("Linear 3 Bi:", self.model.linear3.bias)
@@ -118,7 +134,7 @@ class NeuralNetCustom():
             #self.plot_grad_flow(self.model.named_parameters())
         self.optimizer.step()
         if iteration % 100 == 99:
-            #print(" x input :", self.x)
+            print(" x input :", self.x)
             print(" y actual:", self.y)
             print(" y pred  :", self.y_pred)
             print(" loss    :", self.loss.item())

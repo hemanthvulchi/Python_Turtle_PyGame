@@ -34,6 +34,9 @@ class PowerSource():
         dist = math.sqrt((x2 - x1)**2 + (y2 - y1)**2)  
         return dist  
 
+    def goto_random(self):
+        self.psource.goto(random.randrange(-390,390),random.randrange(-390,390))
+
     def move(self):
         self.psource.setx(self.psource.xcor()+self.psource.dx)
 

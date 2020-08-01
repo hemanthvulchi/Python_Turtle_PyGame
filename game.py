@@ -10,6 +10,7 @@ import powersource
 import agent
 import neuralnet_pytorch as NeuralNetPytorch
 import os
+import random
 
 os.system('clear')
 print("Hello world turtle")
@@ -35,7 +36,33 @@ class Gameengine:
     def worldexit(self):
         turtle.Screen().bye()
 
-    #listen to key strokes
+    def setRandomSkips(self, number):
+        self.random_skips = number
+
+    def changeRandomSkips1(self):
+        self.setRandomSkips(1)
+        print("Setting random skips:1")
+
+    def changeRandomSkips2(self):
+        self.setRandomSkips(2)
+        print("Setting random skips:2")
+
+    def changeRandomSkips5(self):
+        self.setRandomSkips(5)
+        print("Setting random skips:5")
+
+    def changeRandomSkips9(self):
+        self.setRandomSkips(9)
+        print("Setting random skips:9")
+
+    def changeRandomSkips10000(self):
+        self.setRandomSkips(10000)
+        print("Setting random skips:10000")
+
+    def reset_agent(self):
+        self.ai_agent.agent.goto(0, 0)
+
+    # listen to key strokes
     def worldlisten(self):
         self.world.worldscreen.listen()
         self.world.worldscreen.onkeypress(self.print_distances, "z")
@@ -43,7 +70,13 @@ class Gameengine:
         self.world.worldscreen.onkeypress(self.ai_agent.move_bot, "s")
         self.world.worldscreen.onkeypress(self.ai_agent.move_right, "d")
         self.world.worldscreen.onkeypress(self.ai_agent.move_left, "a")
+        self.world.worldscreen.onkeypress(self.ai_agent.reset_agent, "r")
         self.world.worldscreen.onkeypress(self.worldexit, "p")
+        self.world.worldscreen.onkeypress(self.changeRandomSkips1, "1")
+        self.world.worldscreen.onkeypress(self.changeRandomSkips2, "2")
+        self.world.worldscreen.onkeypress(self.changeRandomSkips5, "5")
+        self.world.worldscreen.onkeypress(self.changeRandomSkips9, "9")
+        self.world.worldscreen.onkeypress(self.changeRandomSkips10000, "0")
 
     # main loop
     def mainloop_test(self):
@@ -53,24 +86,32 @@ class Gameengine:
     
     # main loop
     def mainloop(self, game_ai):
-        i=0
+        i = 0
+        self.random_skips = 10000
         while True:
             # update the screen with the latest
             self.world.worldscreen.update()
             # calculate the agent distances from the power source
             agent_distances = self.ai_agent.get_distance(self.psrc.psource.xcor(),
                                                          self.psrc.psource.ycor())
-            # game_ai.observe_world(agent_distances)
-            # forward pass || agent also takes agent distances
+            # forward pass || agent also takes agent distances            
             self.y_index = game_ai.action_world(agent_distances)
-            # this moves the agent in the resulting direction
-            self.ai_agent.move_agent(self.y_index)
+            
             # this calculates the loss of the agent movement; i is just to print the iteration of the code
             self.loss = game_ai.observe_result(i)
-            # If aimed to move the agent through a procedural fashion
-            #self.ai_agent.move_agent(game_ai.minimum_index())
 
-            #if i % 100 == 99:
+            if i % self.random_skips == 0:
+                # this moves the agent in the resulting direction
+                self.ai_agent.move_agent(self.y_index)
+            else:
+                self.ai_agent.move_agent(random.randint(0, 3))
+                self.psrc.goto_random()
+
+
+            # If aimed to move the agent through a procedural fashion
+            # self.ai_agent.move_agent(game_ai.minimum_index())
+
+            # if i % 100 == 99:
             #    print(i, self.loss)#
 
             # to move powersource, if it is beside the agent
