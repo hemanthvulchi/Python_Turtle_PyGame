@@ -16,7 +16,7 @@ class Agent():
         self.agent.penup()
         # self.agent.goto(random.randrange(-390,390),random.randrange(-390,390))
         self.agent.goto(0, 0)
-        self.agent.speed(0.0005)
+        self.agent.speed(0.05)
         self.agent.dx = 1
         self.agent.dy = 1
         self.size_x = screen_world.size_x

@@ -55,22 +55,27 @@ class Gameengine:
     def mainloop(self, game_ai):
         i=0
         while True:
+            # update the screen with the latest
             self.world.worldscreen.update()
+            # calculate the agent distances from the power source
             agent_distances = self.ai_agent.get_distance(self.psrc.psource.xcor(),
                                                          self.psrc.psource.ycor())
-            game_ai.observe_world(agent_distances)
-            self.y_index = game_ai.action_world()
+            # game_ai.observe_world(agent_distances)
+            # forward pass || agent also takes agent distances
+            self.y_index = game_ai.action_world(agent_distances)
+            # this moves the agent in the resulting direction
             self.ai_agent.move_agent(self.y_index)
-            self.loss = game_ai.observe_result()
+            # this calculates the loss of the agent movement; i is just to print the iteration of the code
+            self.loss = game_ai.observe_result(i)
             # If aimed to move the agent through a procedural fashion
             #self.ai_agent.move_agent(game_ai.minimum_index())
 
-            if i % 100 == 99:
-                print(i, self.loss)
+            #if i % 100 == 99:
+            #    print(i, self.loss)#
 
             # to move powersource, if it is beside the agent
             self.psrc.check_agent(self.ai_agent)
-            #i = i + 1
+            i = i + 1
 
 
 # main game 

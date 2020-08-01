@@ -18,7 +18,7 @@ class ThreeLayerNet(torch.nn.Module):
         # y_pred = self.linear3(h_relu2)
         #return y_pred
         h_relu1 = TF.relu(self.linear1(x))
-        h_relu2 = TF.relu(self.linear2(h_relu1))
+        h_relu2 = TF.relu(self.linear1(h_relu1))
         return torch.sigmoid(self.linear3(h_relu2))
 
 
@@ -99,26 +99,18 @@ class NeuralNetCustom():
         if iteration % 100 == 99:
             print("================================================================================================")
             print("iteration:", iteration)
-            #for name, param in self.model.named_parameters():
-            #    print(name, param, param.grad)
+            for name, param in self.model.named_parameters():
+                print(name, param.grad)
             #self.model.linear1.register_forward_hook(lambda grad: print(grad))
             #self.model.linear1.register_backward_hook(lambda grad: print(grad))
-            print("Linear 1 Wg:", self.model.linear1.weight)
-            print("Linear 1 Gd:", self.model.linear1.weight.grad)
-            print("Linear 1 Bi:", self.model.linear1.bias)
-            print("Linear 1 Gd:", self.model.linear1.bias.grad)
-            print("Linear 2 Wg:", self.model.linear2.weight)
-            print("Linear 2 Gd:", self.model.linear2.weight.grad)
-            print("Linear 2 Bi:", self.model.linear2.bias)
-            print("Linear 2 Gd:", self.model.linear2.bias.grad)
-            print("Linear 3 Wg:", self.model.linear3.weight)
-            print("Linear 3 Gd:", self.model.linear3.weight.grad)
-            print("Linear 3 Bi:", self.model.linear3.bias)
-            print("Linear 3 Gd:", self.model.linear3.bias.grad)
+            #print("Grad Linear 1:", self.model.linear1.grad)
+            #print("Grad Linear 2:", self.model.linear2.grad)
+            #print("Grad Linear 3", self.model.linear3.grad)
+            #print("Grad Loss", self.loss.grad)
             #self.plot_grad_flow(self.model.named_parameters())
         self.optimizer.step()
         if iteration % 100 == 99:
-            #print(" x input :", self.x)
+            print(" x input :", self.x)
             print(" y actual:", self.y)
             print(" y pred  :", self.y_pred)
             print(" loss    :", self.loss.item())

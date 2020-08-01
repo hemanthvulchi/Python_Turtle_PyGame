@@ -1,24 +1,28 @@
 import torch
+a = torch.ones(5)
+a.requires_grad = True
 
-if torch.cuda.is_available():
-    device = torch.device("cuda")          
-    torch.cuda.set_device(0)
-else:
-    device = torch.device("cpu")
+b = 2*a
 
-# Setting number of batches, inputs, hidden layers and outputs
-dtype = torch.float
-N = 1
-D_in = 4
-H1 = 4
-H2 = 4
-D_out = 4
+b.retain_grad()   # Since b is non-leaf and it's grad will be destroyed otherwise.
 
-# Setting input and output tensors
-y = torch.randn(N, D_in, device=device, dtype=dtype)
+c = b.mean()
 
-print(y)
-y.zero_()
-print(y)
-y.data(2) = 1
-print(y)
+c.backward()
+print("first pass")
+print(a.grad, b.grad)
+
+# Redo the experiment but with a hook that multiplies b's grad by 2. 
+a = torch.ones(5)
+
+a.requires_grad = True
+
+b = 2*a
+
+b.retain_grad()
+
+b.register_hook(lambda x: print(x))  
+
+b.mean().backward() 
+
+print(a.grad, b.grad)
