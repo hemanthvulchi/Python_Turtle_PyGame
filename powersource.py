@@ -27,7 +27,7 @@ class PowerSource():
         self.y_agent = turtle_agent.agent.ycor()
         if self.point_distance(self.x_power,self.y_power,self.x_agent,self.y_agent) < 21:
             self.psource.goto(random.randrange(-390,390),random.randrange(-390,390))
-            print("Powersource is regenerated")
+            #print("Powersource is regenerated")
 
     #function to find the distance between two points
     def point_distance(self,x1,y1,x2,y2):  
