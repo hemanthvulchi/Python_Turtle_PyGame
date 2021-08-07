@@ -8,19 +8,22 @@ import pongMath as pm
 class ThreeLayerNet(torch.nn.Module):
     def __init__(self, D_in, H1, H2, D_out):
         super(ThreeLayerNet, self).__init__()
-        self.linear1 = torch.nn.Linear(D_in, H1)
+        #self.linear1 = torch.nn.Linear(D_in, H1)
         #self.linear2 = torch.nn.Linear(H1, H2)
-        self.linear3 = torch.nn.Linear(H1, D_out)
+        self.linear3 = torch.nn.Linear(D_in, D_out)
 
     def forward(self, x):
         #h_relu1 = self.linear1(x).clamp(min=0)
         #h_relu2 = self.linear2(h_relu1).clamp(min=0)
         # y_pred = self.linear3(h_relu2)
         #return y_pred
-        h_relu1 = TF.relu(self.linear1(x))
+        #h_relu1 = TF.relu(self.linear1(x))
         #h_relu2 = TF.relu(self.linear2(h_relu1))
-        y_pred = self.linear3(h_relu1).sigmoid()
-        #y_pred = self.linear3(h_relu1).softmax(dim=1)
+        #y_pred = self.linear3(h_relu1)
+        y_pred = self.linear3(x)
+        #y_pred = self.linear3(x).softmax(dim=1)
+        #y_pred = self.linear3(x).log_softmax
+        #y_pred = TF.relu(self.linear3(x))
         #y_pred = self.linear3(h_relu1).tanh()
         return y_pred
 
@@ -39,7 +42,7 @@ class NeuralNetCustom():
         # Setting number of batches, inputs, hidden layers and outputs
         self.ndtype = torch.float
         self.N = 1
-        self.D_in = 4
+        self.D_in = 12
         self.H1 = 4
         self.H2 = 4
         self.D_out = 4
@@ -50,14 +53,14 @@ class NeuralNetCustom():
 
         # Initializing models, criterion and optimizer
         self.model = ThreeLayerNet(self.D_in, self.H1, self.H2, self.D_out)
-        self.model.cuda("cuda:0")
+        #self.model.cuda("cuda:0")
+        self.model.to(self.device)
         self.weights_init(self.model)
         #self.model.weight.data.uniform_(0.0, 1.0)
-        self.criterion = torch.nn.MSELoss(reduction='sum').cuda("cuda:0")
-        #self.criterion = torch.nn.NLLLoss(reduction='sum').cuda("cuda:0")
-        #self.criterion = torch.nn.CrossEntropyLoss().cuda("cuda:0")
-        #self.optimizer = torch.optim.SGD(self.model.parameters(), lr=1e-4)
-        self.optimizer = torch.optim.Adam(self.model.parameters(), lr=1e-5)
+        #self.criterion = torch.nn.MSELoss(reduction='sum').cuda("cuda:0")
+        self.criterion = torch.nn.CrossEntropyLoss()
+        #self.optimizer = torch.optim.SGD(self.model.parameters(), lr=1e-4, momentum=0.9)
+        self.optimizer = torch.optim.Adam(self.model.parameters(), lr=1e-4)
 
     # initialize the weights 
     def weights_init(self, m):
@@ -66,46 +69,63 @@ class NeuralNetCustom():
             torch.nn.init.xavier_uniform(m.bias.data)
 
     # use the inputs entered and normalize them and enter them in a tensor
-    def get_input(self, x1, x2, x3, x4):
-        self.np_inputs = pm.PongMath.normalize(x1, x2, x3, x4)
+    def get_input(self, x_inputs):
+        self.np_inputs = pm.PongMath.normalize(x_inputs)
         self.x.data = torch.tensor(self.np_inputs, device=self.device, dtype=self.ndtype).data
 
     def get_output(self, y1, y2, y3, y4):
-        self.y = torch.tensor([y1, y2, y3, y4], device=self.device, dtype=self.ndtype).data
+        self.y = torch.tensor([[y1], [y2], [y3], [y4]], device=self.device, dtype=self.ndtype).data
 
     # neural network forward function; to be used after observe world function || combine with observe_world later    
     def action_world(self, a_distances):
-        self.get_input(a_distances[0], a_distances[1], a_distances[2], a_distances[3])
-        self.y_pred = self.model(self.x).cuda("cuda:0")
+        self.get_input(a_distances)
+        self.y_pred = self.model(self.x)
+        #print("print in action world:", self.y_pred)
+        #print("print in action world:", self.y_pred.size)
+
         return pm.PongMath.maximum_index(self.y_pred, self.D_out)
 
-    # observe result is to calculate the losss based on the movement and calculates the loss function
-    def observe_result(self, iteration):
-        self.y.zero_()
-        y_index = pm.PongMath.minimum_index(self.x,self.D_in)
-        if y_index == 0:
-            self.y.data = torch.tensor([1, 0, 0, 0], device=self.device, dtype=self.ndtype).data
-        elif y_index == 1:
-            self.y.data = torch.tensor([0, 1, 0, 0], device=self.device, dtype=self.ndtype).data
-        elif y_index == 2:
-            self.y.data = torch.tensor([0, 0, 1, 0], device=self.device, dtype=self.ndtype).data
-        elif y_index == 3:
-            self.y.data = torch.tensor([0, 0, 0, 1], device=self.device, dtype=self.ndtype).data
-        # if y_index == 0:
-        #     self.y.data = torch.tensor([1, -1, -1, -1], device=self.device, dtype=self.ndtype).data
-        # elif y_index == 1:
-        #     self.y.data = torch.tensor([-1, 1, -1, -1], device=self.device, dtype=self.ndtype).data
-        # elif y_index == 2:
-        #     self.y.data = torch.tensor([-1, -1, 1, -1], device=self.device, dtype=self.ndtype).data
-        # elif y_index == 3:
-        #     self.y.data = torch.tensor([-1, -1, -1, 1], device=self.device, dtype=self.ndtype).data
+    # custom loss function
+    def my_loss(self, output, target):
+        loss = torch.mean((output - target)**2)
+        return loss
 
-        self.loss = self.criterion(self.y_pred, self.y).cuda("cuda:0")
-        self.optimizer.zero_grad
+    # observe result is to calculate the losss based on the movement and calculates the loss function
+    def observe_result(self, iteration, y_index):
+        self.y.zero_()
+        # if y_index == 0:
+        #     self.y.data = torch.tensor([1, 0, 0, 0], device=self.device, dtype=self.ndtype).data
+        # elif y_index == 1:
+        #     self.y.data = torch.tensor([0, 1, 0, 0], device=self.device, dtype=self.ndtype).data
+        # elif y_index == 2:
+        #     self.y.data = torch.tensor([0, 0, 1, 0], device=self.device, dtype=self.ndtype).data
+        # elif y_index == 3:
+        #     self.y.data = torch.tensor([0, 0, 0, 1], device=self.device, dtype=self.ndtype).data            
+        if y_index == 0:
+            self.y.data = torch.tensor([0], device=self.device).data
+        elif y_index == 1:
+            self.y.data = torch.tensor([1], device=self.device).data
+        elif y_index == 2:
+            self.y.data = torch.tensor([2], device=self.device).data
+        elif y_index == 3:
+            self.y.data = torch.tensor([3], device=self.device).data            
+        self.y_pred_reshape = torch.reshape(self.y_pred, (1, 4))
+        self.y_pred_reshape.to(device = self.device)
+        # print(" yrs size:", self.y_pred_reshape.size())
+        # print(" yrs     :", self.y_pred_reshape)        
+        #self.y_label = torch.argmax(self.y, 1)
+        #print(" yl size  :", self.y_label.size())
+        #print(" yl pred_s:", self.y_label.size())
+        #self.loss = self.criterion(self.y_pred, self.y_label)
+        self.loss = self.criterion(self.y_pred_reshape, self.y)
+        #self.loss = self.my_loss(self.y_pred, self.y)
+        self.optimizer.zero_grad()
         self.loss.backward()
+        self.optimizer.step()
         if iteration % 100 == 99:
             print("================================================================================================")
             print("iteration:", iteration)
+            print("Class:",self.model)
             #for name, param in self.model.named_parameters():
             #    print(name, param, param.grad)
             #self.model.linear1.register_forward_hook(lambda grad: print(grad))
@@ -123,12 +143,14 @@ class NeuralNetCustom():
             print("Linear 3 Bi:", self.model.linear3.bias)
             print("Linear 3 Gd:", self.model.linear3.bias.grad)
             #self.plot_grad_flow(self.model.named_parameters())
-        self.optimizer.step()
+
         if iteration % 100 == 99:
             print(" x input :", self.x)
             print(" y actual:", self.y)
             print(" y pred  :", self.y_pred)
             print(" loss    :", self.loss.item())
+            print("y size     :", self.y.size())
+            print("y pred size:", self.y_pred.size())
         return self.loss.item()
 
     # is used to return the minimum index of a array || used for finding the minimum distance direction of the agent

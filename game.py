@@ -11,6 +11,7 @@ import agent
 import neuralnet_pytorch as NeuralNetPytorch
 import os
 import random
+import pongMath as pm
 
 os.system('clear')
 print("Hello world turtle")
@@ -29,9 +30,9 @@ class Gameengine:
         self.ai_agent = agent.Agent(self.world)
 
     def print_distances(self):
-        self.ai_agent.calculate_distance(self.psrc.psource.xcor(), 
-                                         self.psrc.psource.ycor())
-        self.ai_agent.print_distance()
+        self.ai_agent.calculate_distances(self.psrc.psource.xcor(),
+                                          self.psrc.psource.ycor())
+        self.ai_agent.print_distances()
 
     def worldexit(self):
         turtle.Screen().bye()
@@ -92,13 +93,18 @@ class Gameengine:
             # update the screen with the latest
             self.world.worldscreen.update()
             # calculate the agent distances from the power source
-            agent_distances = self.ai_agent.get_distance(self.psrc.psource.xcor(),
-                                                         self.psrc.psource.ycor())
-            # forward pass || agent also takes agent distances            
+            self.ai_agent.calculate_distances(self.psrc.psource.xcor(),
+                                              self.psrc.psource.ycor())
+            agent_distances = self.ai_agent.get_distances(self.psrc.psource.xcor(),
+                                                          self.psrc.psource.ycor())
+            agent_y_actual_distances = self.ai_agent.get_distance(self.psrc.psource.xcor(),
+                                                                  self.psrc.psource.ycor())                                                     
+            # forward pass || agent also takes agent distances
+            self.y_actual_index = pm.PongMath.minimum_index(agent_y_actual_distances, 4)
             self.y_index = game_ai.action_world(agent_distances)
             
             # this calculates the loss of the agent movement; i is just to print the iteration of the code
-            self.loss = game_ai.observe_result(i)
+            self.loss = game_ai.observe_result(i, self.y_actual_index)
 
             if i % self.random_skips == 0:
                 # this moves the agent in the resulting direction
@@ -109,10 +115,10 @@ class Gameengine:
 
 
             # If aimed to move the agent through a procedural fashion
-            # self.ai_agent.move_agent(game_ai.minimum_index())
+            #self.ai_agent.move_agent(self.y_actual_index)
 
-            # if i % 100 == 99:
-            #    print(i, self.loss)#
+            if i % 100 == 99:
+                print("move towards", self.y_index)#
 
             # to move powersource, if it is beside the agent
             self.psrc.check_agent(self.ai_agent)

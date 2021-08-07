@@ -41,6 +41,9 @@ N, D_in, H, D_out = 64, 1000, 100, 10
 # Create random Tensors to hold inputs and outputs
 x = torch.randn(N, D_in)
 y = torch.randn(N, D_out)
+print("size of x", x.size())
+print("size of y", y.size())
+print("y", y)
 
 # Construct our model by instantiating the class defined above
 model = DynamicNet(D_in, H, D_out)
